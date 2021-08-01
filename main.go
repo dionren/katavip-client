@@ -37,6 +37,8 @@ func main() {
 
 	wsUrl := "ws://" + host + *port + "/engine/operator/" + engineUuid36 + "/" + *secret
 
+	println(wsUrl)
+
 	ws, _, err := websocket.DefaultDialer.Dial(wsUrl, nil)
 
 	if err != nil {

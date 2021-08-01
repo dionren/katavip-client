@@ -20,7 +20,7 @@ var (
 func main() {
 	flag.Parse()
 
-	println("katavip-client v1.0.0")
+	println("katavip-client v1.0.1")
 	println("https://github.com/dionren/katavip-client")
 
 	if *port == "" || *engine == "" || *secret == "" {

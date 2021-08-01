@@ -18,3 +18,7 @@ params are viewed at katago.vip website.
 ### Lizzie 客户端
 
 直接调用
+
+### sabaki
+
+![](docs/sabaki_config.png)

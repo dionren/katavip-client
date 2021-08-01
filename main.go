@@ -67,8 +67,8 @@ func main() {
 	}
 
 	var msgClient MsgClient
+	reader := bufio.NewReader(os.Stdin)
 	for {
-		reader := bufio.NewReader(os.Stdin)
 		bytes, _, _ := reader.ReadLine()
 		msgClient.Cmd = string(bytes)
 		msgClient.Category = "gtp"

@@ -21,4 +21,4 @@ params are viewed at katago.vip website.
 
 ### sabaki
 
-![](docs/sabaki_config.png)
+![](https://github.com/dionren/katavip-client/blob/main/docs/sabaki_config.jpg)

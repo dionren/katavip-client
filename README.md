@@ -3,10 +3,13 @@ katavip is a remote tool based on katago, use web socket.
 
 
 ## usage
-
+way1:
 katavip.exe -p 20001 -e e8906c5b-2694-4f6b-be7c-f694a792c2d1 -s 12345678
+params are viewed at https://katavip.cn
 
-params are viewed at katago.vip website.
+way2:
+katavip.exe -k ad580754d04846dd
+params are viewed at https://katavip.cn
 
 
 ## 使用方式

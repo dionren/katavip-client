@@ -1,1 +1,1 @@
-"katavip.exe" -p 20005 -e ad60fecb-e171-4ab4-b7e3-547bcec84242 -s 85434751
+"katavip.exe" -k 01df86fa700dbdc1

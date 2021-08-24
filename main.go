@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/websocket"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -14,28 +16,46 @@ var (
 	port   = flag.String("p", "", "port")
 	engine = flag.String("e", "", "engine uuid36 or uuid32")
 	secret = flag.String("s", "", "secret")
+	accessKey = flag.String("k", "", "access key")
 	host   = "workers.katago.vip:"
 )
 
 func main() {
 	flag.Parse()
 
-	println("katavip-client v1.0.1")
+	println("katavip-client v1.0.2")
 	println("https://github.com/dionren/katavip-client")
 
-	if *port == "" || *engine == "" || *secret == "" {
+	var wsUrl string
+
+	if *port != "" && *engine != "" && *secret != "" {
+		var engineUuid36 string
+		if (strings.Count(*engine, "") - 1) == 32 {
+			engineUuid36 = (*engine)[0:8] + "-" + (*engine)[8:12] + "-" + (*engine)[12:16] + "-" + (*engine)[16:20] + "-" + (*engine)[20:]
+		} else {
+			engineUuid36 = *engine
+		}
+		wsUrl = "ws://" + host + *port + "/engine/operator/" + engineUuid36 + "/" + *secret
+	} else if *accessKey != "" {
+		resp, err := http.Get("https://api.katavip.cn/api/v1/katavip/go/ws/operator?accessKey=" + *accessKey)
+		if err != nil {
+			println("https://api.katavip.cn offline temporary")
+			return
+		}
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			println("https://api.katavip.cn offline temporary")
+			return
+		}
+		if resp.StatusCode != 200 {
+			println(string(b))
+			return
+		}
+		wsUrl = string(b)
+	} else {
 		println("params error, please check.")
 		return
 	}
-
-	var engineUuid36 string
-	if (strings.Count(*engine, "") - 1) == 32 {
-		engineUuid36 = (*engine)[0:8] + "-" + (*engine)[8:12] + "-" + (*engine)[12:16] + "-" + (*engine)[16:20] + "-" + (*engine)[20:]
-	} else {
-		engineUuid36 = *engine
-	}
-
-	wsUrl := "ws://" + host + *port + "/engine/operator/" + engineUuid36 + "/" + *secret
 
 	println(wsUrl)
 

@@ -2,6 +2,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"github.com/gorilla/websocket"
@@ -23,7 +26,7 @@ var (
 func main() {
 	flag.Parse()
 
-	println("katavip-client v1.0.2")
+	println("katavip-client v1.0.3")
 	println("https://github.com/dionren/katavip-client")
 
 	var wsUrl string
@@ -65,6 +68,7 @@ func main() {
 		println("WebSocket connected error.")
 		return
 	} else {
+		// 从WSS接收数据
 		go func() {
 			var msgServer MsgServer
 			for {
@@ -78,6 +82,10 @@ func main() {
 					return
 				}
 
+				if msgServer.Zip == 1 {
+					msgServer.Str, _ = unGzipBase64(msgServer.Str)
+				}
+
 				_, err = os.Stdout.WriteString(msgServer.Str)
 				if err != nil {
 					return
@@ -87,10 +95,21 @@ func main() {
 	}
 
 	var msgClient MsgClient
+
+	// 发送压缩指令
+	msgClient.Category = "ext"
+	msgClient.Cmd = "zip"
+	payload, _ := json.Marshal(msgClient)
+	err = ws.WriteMessage(websocket.TextMessage, payload)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 从STD不断的轮询输入数据并通过WSS发送至服务器
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		bytes, _, _ := reader.ReadLine()
-		msgClient.Cmd = string(bytes)
+		byteArray, _, _ := reader.ReadLine()
+		msgClient.Cmd = string(byteArray)
 		msgClient.Category = "gtp"
 
 		if msgClient.Cmd == "quit" {
@@ -110,8 +129,36 @@ func main() {
 	}
 }
 
+func unGzip(in []byte) ([]byte, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(in))
+
+	if err != nil {
+		var out []byte
+		return out, err
+	}
+
+	defer reader.Close()
+	return ioutil.ReadAll(reader)
+}
+
+// 从Base64数据解析成byte数组，再解压缩，再转换成字符串
+func unGzipBase64(in string) (string, error) {
+	bytesOut, err := base64.StdEncoding.DecodeString(in)
+	if err != nil {
+		return "", err
+	}
+
+	bytesUnGzip, err := unGzip(bytesOut)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytesUnGzip), nil
+}
+
 type MsgServer struct {
 	Code     int    `json:"code,omitempty"`
+	Zip      int    `json:"zip,omitempty"`
 	Category string `json:"category,omitempty"`
 	Str      string `json:"str,omitempty"`
 	Game     string `json:"game,omitempty"`
